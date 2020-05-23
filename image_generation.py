@@ -7,7 +7,7 @@ import datetime
 import os
 
 class ImageGenerator():
-    def __init__(self):
+    def __init__(self, vocab=string.digits):
     
         self._base_dir_name = "generated_images_{dt}".format(dt=datetime.datetime.now().strftime("%s"))
         # Create the base dir we're gonna save our generated images in
@@ -15,11 +15,12 @@ class ImageGenerator():
         
         # self.captcha_generator = ImageCaptcha(fonts=self._fonts, width=80, height=80)
         self.captcha_generator = ImageCaptcha(width=240, height=80)
-#         self.base_chars = string.ascii_letters + string.digits
-        # self.base_chars = string.ascii_lowercase
-#         self.base_chars = 'ow' #only train for the o & w letters
-        # self.base_chars = string.digits
-        self.base_chars = "01"
+#         self.vocab = string.ascii_letters + string.digits
+        # self.vocab = string.ascii_lowercase
+#         self.vocab = 'ow' #only train for the o & w letters
+        # self.vocab = string.digits
+        # self.vocab = vocab
+        self.vocab = "01"
 
         self.n_min_chars = 4
         self.n_max_chars = 6
@@ -31,7 +32,7 @@ class ImageGenerator():
         captcha = ""
         captcha_length = random.randint(self.n_min_chars, self.n_max_chars)
         for x in range(captcha_length):
-            captcha += random.choice(self.base_chars)
+            captcha += random.choice(self.vocab)
 
         return captcha
     
@@ -56,5 +57,5 @@ class ImageGenerator():
             fname = self.generate_captcha_image(sequence)
 #             print("Wrote to {p}".format(p=fname))
 
-ig = ImageGenerator()
-ig.execute_img_generation()
+# ig = ImageGenerator()
+# ig.execute_img_generation()

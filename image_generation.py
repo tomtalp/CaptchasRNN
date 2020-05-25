@@ -14,7 +14,7 @@ class ImageGenerator():
         os.mkdir(self._base_dir_name)
         
         # self.captcha_generator = ImageCaptcha(fonts=self._fonts, width=80, height=80)
-        self.captcha_generator = ImageCaptcha(width=240, height=80)
+        self.captcha_generator = ImageCaptcha(width=128, height=128)
 #         self.vocab = string.ascii_letters + string.digits
         # self.vocab = string.ascii_lowercase
 #         self.vocab = 'ow' #only train for the o & w letters
@@ -57,5 +57,5 @@ class ImageGenerator():
             fname = self.generate_captcha_image(sequence)
 #             print("Wrote to {p}".format(p=fname))
 
-# ig = ImageGenerator()
-# ig.execute_img_generation()
+ig = ImageGenerator()
+ig.execute_img_generation()

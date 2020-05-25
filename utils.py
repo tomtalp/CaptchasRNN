@@ -1,5 +1,15 @@
 import torch
 
+def custom_collate_func(data):
+    """
+    Stack the images as one big tensor, and the labels as a list
+    This is done because the labels are tensors of varying sizes, and we're forced to create them as a list instead
+    of a tensor
+    """
+    imgs = torch.stack([x[0] for x in data], dim=0)
+    labels = [x[1] for x in data]
+    return [imgs, labels]
+
 class LabelConverter():
     """
     A utility for encoding/decoding labels.

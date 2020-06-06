@@ -1,24 +1,53 @@
 import torch
 from torch import nn
 import torchvision
+import torch.nn.functional as F
 
 class ConvRNN(nn.Module):
-    """Stacked RNN
-    """
-    def __init__(self):
+    def __init__(self, target_size):
         super(ConvRNN, self).__init__()
         resnet = torchvision.models.resnet18(pretrained=True)
         modules = list(resnet.children())[:-2]
 
         self.resnet = nn.Sequential(*modules)
+        
+        #### Don't optimize resnet
         for p in self.resnet.parameters():
             p.requires_grad = False
-            
+
+        #### Optimize the last 2 blocks
+        for c in list(self.resnet.children())[-2:]:
+            for p in c.parameters():
+                p.requires_grad = True
+
+
+        self.cnv = nn.Conv2d(512, 512, 2)
         self.rnn = nn.RNN(512, 256, 1, batch_first=True) 
-        self.fc = nn.Linear(256, 3)
+        
+        # self.small_fc = nn.Linear(256, target_size)
+        self.fc1 = nn.Linear(256, 100)
+        self.fc2 = nn.Linear(100, target_size)
+        # self.fc3 = nn.Linear(64, target_size)
+        # self.fc4 = nn.Linear(64, target_size)
+
+        # self.small_fc.bias.data.fill_(0)
+        # self.small_fc.weight.data.uniform_(-0.1, 0.1)
+
+        self.fc1.bias.data.fill_(0)
+        self.fc1.weight.data.uniform_(-0.1, 0.1)
+        self.fc2.bias.data.fill_(0)
+        self.fc2.weight.data.uniform_(-0.1, 0.1)
+        # self.fc3.bias.data.fill_(0)
+        # self.fc3.weight.data.uniform_(-0.1, 0.1)
+        # self.fc4.bias.data.fill_(0)
+        # self.fc4.weight.data.uniform_(-0.1, 0.1)
 
     def forward(self, x):
         encoded_img = self.resnet(x)
+        # encoded_img = resnet(x)
+        encoded_img = F.max_pool2d(self.cnv(encoded_img), (2,2))
+        # encoded_img = F.max_pool2d(cnv(encoded_img), (2,2))
+        encoded_img = F.relu(encoded_img)
 
         batch_size = encoded_img.size(0)
         features = encoded_img.size(1)
@@ -30,7 +59,19 @@ class ConvRNN(nn.Module):
 
         fc_outputs = []
         for seq_idx in range(rnn_seq_len):
-            output = self.fc(rnn_outputs[:, seq_idx, :])
+            
+            # output = self.small_fc(rnn_outputs[:, seq_idx, :])
+            output = self.fc1(rnn_outputs[:, seq_idx, :])
+            output = F.relu(output)
+
+            output = self.fc2(output)
+            # output = F.relu(output)
+
+            # output = self.fc3(output)
+            # output = F.relu(output)
+
+            # output = self.fc4(output)
+
             fc_outputs.append(output)
 
         outputs = torch.stack(fc_outputs).log_softmax(2) # Outputs is of shape seq_len * batch_size * class_num (which is what CTC expects)
@@ -63,10 +104,11 @@ class ConvRNN(nn.Module):
 
 # fc = nn.Linear(256, 3)
 
-# fc_outputs = []
-# for seq_idx in range(rnn_seq_len):
-#     output = fc(rnn_outputs[:, seq_idx, :])
-#     fc_outputs.append(output)
+fc_outputs = []
+for seq_idx in range(rnn_seq_len):
+    output = fc1(rnn_outputs[:, seq_idx, :])
+    output = fc2(output)
+    fc_outputs.append(output)
 
 # # outputs = torch.stack(fc_outputs).permute(1, 0, 2) # Now outputs is of shape batch_size * seq_len * class_num
 # outputs = torch.stack(fc_outputs).log_softmax(2) # Outputs is of shape seq_len * batch_size * class_num (which is what CTC expects)

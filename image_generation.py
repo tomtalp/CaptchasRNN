@@ -14,13 +14,14 @@ class ImageGenerator():
         os.mkdir(self._base_dir_name)
         
         # self.captcha_generator = ImageCaptcha(fonts=self._fonts, width=80, height=80)
-        self.captcha_generator = ImageCaptcha(width=128, height=128)
-#         self.vocab = string.ascii_letters + string.digits
+        fonts = ["/Users/tomtalpir/dev/tom/captcha_project/CaptchaImgGeneration/fonts/Seravek.ttc"]
+        self.captcha_generator = ImageCaptcha(width=160, height=160, fonts=fonts)
+        # self.vocab = string.ascii_letters + string.digits
         # self.vocab = string.ascii_lowercase
 #         self.vocab = 'ow' #only train for the o & w letters
         # self.vocab = string.digits
         # self.vocab = vocab
-        self.vocab = "01"
+        # self.vocab = "01"
 
         self.n_min_chars = 4
         self.n_max_chars = 6
@@ -58,4 +59,9 @@ class ImageGenerator():
 #             print("Wrote to {p}".format(p=fname))
 
 ig = ImageGenerator()
-ig.execute_img_generation()
+ig.execute_img_generation(num_of_images=1000)
+
+# import tarfile
+# tar = tarfile.open("local_test_lowercase_ascii.tar.gz", "w:gz")
+# tar.add("local_test_lowercase_ascii/", arcname="local_test_lowercase_ascii")
+# tar.close()

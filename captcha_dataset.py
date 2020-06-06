@@ -26,9 +26,13 @@ def get_metadata_df(images_path):
         # The path we're getting is the full path - /path/to/img.png. Split by `/` and get the last part - that's our image name!
         filename = img.split("/")[-1] 
 
-        # Our file names are of the following format - <char>_<random_id>.png
+        # Our file names are of the following format - <label>_<random_id>.png
         # Extract the char name by splitting via the `_` char
-        label = filename.split("_")[0]
+        # For the Kaggle dataset, format is <label>.png
+        if "_" in filename: # Our generated images
+            label = filename.split("_")[0]
+        else: #Kaggle:
+            label = filename.split(".")[0]
 
         info = {
             "img_path": img,
@@ -41,10 +45,11 @@ def get_metadata_df(images_path):
 
 
 class CaptchaDataset(Dataset):
-    def __init__(self, dataset_metadata_df, vocab):
+    def __init__(self, dataset_metadata_df, vocab, is_external_img=False):
         self.dataset_metadata_df = dataset_metadata_df
         self.vocab = vocab
         self.label_converter = LabelConverter(self.vocab)
+        self.is_external_img = is_external_img
     
     def __len__(self):
         return len(self.dataset_metadata_df)
@@ -56,16 +61,24 @@ class CaptchaDataset(Dataset):
         img_metadata = self.dataset_metadata_df.iloc[idx]
         img_path = img_metadata[0]
         raw_label = img_metadata[1]
-
+        # print("img_path = ", img_path)
+        # print("raw_label = ", raw_label)
         image = Image.open(img_path)
+        # print("Opened image")
+        if self.is_external_img: # Our external dataset has 4 channels (RGBA) and needs to be converted to RGB
+            background = Image.new("RGB", image.size, (255, 255, 255))
+            background.paste(image, mask=image.split()[3]) # 3 is the alpha channel
+            image = background
+        # print("Converted to rgb")
         preprocess = transforms.Compose([
-            # transforms.Resize(256),
+            transforms.Resize(224),
             # transforms.CenterCrop(224),
             transforms.ToTensor(),
             transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
         ])
+        # print("b4 preprocess")
         image = preprocess(image)
-
+        # print("AFTER preprocess")
         label = self.label_converter.encode(raw_label)
-
+        # print("label = ", label)
         return (image, label)

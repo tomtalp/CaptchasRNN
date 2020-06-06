@@ -1,5 +1,35 @@
 import torch
 
+def model_output_to_label(prediction):
+    """
+    Receive a list which represents an output from our RNN, and convert it to an actual label.
+    Our model has a lot of redundant outputs - The same characters repeated, and a lot of "blank" CTC labels.
+
+    Our goal is to get rid of those characters and return the final label as a PyTorch Tensor
+
+    Example - 
+    Input = [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 2, 0]
+    Output = tensor([1, 1, 1, 2])
+
+    Input = [2, 0, 0, 0, 2, 2, 0, 0, 0, 0, 0, 2, 2, 1, 1, 0]
+    Output = tensor([2, 2, 2, 1])
+    """
+    last_value = None
+    result = []
+    for x in prediction:
+        if x != last_value and x > 0:
+            result.append(x)
+        last_value = x
+    
+    return torch.IntTensor(result)
+
+def compare_tensors(t1, t2):
+    """
+    Check whether two tensors are identical
+    """
+    b = torch.all(t1.eq(t2))
+    return bool(b)
+
 def custom_collate_func(data):
     """
     Stack the images as one big tensor, and the labels as a list
@@ -43,6 +73,7 @@ class LabelConverter():
             txt_label += char
         
         return txt_label
+
 
 
 

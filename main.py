@@ -15,14 +15,22 @@ if __name__ == "__main__":
     # vocab = string.digits
     # train_dataset_path = '/Users/tomtalpir/dev/tom/captcha_project/CaptchasRNN/generated_images_1591000952'
 
-    # vocab = string.ascii_lowercase
-    # train_dataset_path = '/Users/tomtalpir/dev/tom/captcha_project/CaptchasRNN/local_train_lowercase_ascii'
+    vocab = string.ascii_lowercase
+    train_dataset_path = '/Users/tomtalpir/dev/tom/captcha_project/CaptchasRNN/local_train_lowercase_ascii'
     
-    vocab = string.ascii_lowercase + string.digits
+    # vocab = string.ascii_lowercase + string.digits
     # train_dataset_path = '/Users/tomtalpir/dev/tom/captcha_project/CaptchasRNN/local_train_lowercase_ascii'
     
 
     lc = LabelConverter(vocab)
+
+    claptcha_test_dataset_path = '/Users/tomtalpir/dev/tom/captcha_project/CaptchasRNN/claptcha_test'
+    claptcha_test_dataset_metadata_df = get_metadata_df(claptcha_test_dataset_path)
+    claptcha_test_dataset_metadata_df = claptcha_test_dataset_metadata_df.head(2)
+    claptcha_test_dataset = CaptchaDataset(claptcha_test_dataset_metadata_df, vocab)
+    claptcha_test_dataset_loader = torch.utils.data.DataLoader(claptcha_test_dataset, batch_size=200, shuffle=True, collate_fn=custom_collate_func)
+
+
 
     train_dataset_metadata_df = get_metadata_df(train_dataset_path)
     # train_dataset_metadata_df = train_dataset_metadata_df.head(20) # For testing
@@ -47,6 +55,8 @@ if __name__ == "__main__":
     kaggle_dataset_loader = torch.utils.data.DataLoader(kaggle_dataset, batch_size=200, shuffle=True, collate_fn=custom_collate_func)
 
 
+    train_dataset = claptcha_test_dataset
+    train_dataset_loader = claptcha_test_dataset_loader
 
     dataloaders = {
         'train': train_dataset_loader,
@@ -135,7 +145,7 @@ for i, pred in enumerate(prediction):
 
 # inputs, classes = next(iter(train_dataset_loader))
 # inputs, classes = next(iter(val_dataset_loader))
-inputs, classes = next(iter(kaggle_dataset_loader))
+inputs, classes = next(iter(claptcha_test_dataset_loader))
 inputs = inputs[:8, :, :, :]
 classes = classes[:8]
 classes_as_str = []
@@ -249,11 +259,13 @@ for epoch in range(num_epochs):
     model_for_eval.load_state_dict(torch.load("/Users/tomtalpir/Downloads/ctc_rnn_v1_47.pth", map_location=torch.device('cpu')))
     model_for_eval.eval()
     
-    total_validation_samples = len(val_dataset_loader)
+    # total_validation_samples = len(val_dataset_loader)
+    total_validation_samples = len(claptcha_test_dataset_loader)
+    
     with torch.no_grad():
         correct = 0
         total = 0
-        for images, labels in val_dataset_loader:
+        for images, labels in claptcha_test_dataset_loader:
             targets = torch.cat(labels)
             outputs = model_for_eval(images)
             # break
@@ -270,8 +282,8 @@ for epoch in range(num_epochs):
                 model_pred = lc.decode(prediction_tensor)
                 real_label = lc.decode(labels[i])
                 total += 1
-                if compare_tensors(prediction_tensor, labels[i]):
-                    correct += 1
+                # if compare_tensors(prediction_tensor, labels[i]):
+                #     correct += 1
                 print("{i}. Pred = {p}, real = {r} ".format(i=i+1, p=model_pred, r=real_label))
         
         print("{correct}/{total} = {val}%".format(correct=correct, total=total, val=float(correct) / total))

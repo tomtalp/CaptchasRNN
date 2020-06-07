@@ -258,14 +258,14 @@ for epoch in range(num_epochs):
     model_for_eval = ConvRNN(target_size=C)
     model_for_eval.load_state_dict(torch.load("/Users/tomtalpir/Downloads/ctc_rnn_v1_47.pth", map_location=torch.device('cpu')))
     model_for_eval.eval()
-    
+
     # total_validation_samples = len(val_dataset_loader)
-    total_validation_samples = len(claptcha_test_dataset_loader)
+    total_validation_samples = len(kaggle_dataset_loader)
     
     with torch.no_grad():
         correct = 0
         total = 0
-        for images, labels in claptcha_test_dataset_loader:
+        for images, labels in kaggle_dataset_loader:
             targets = torch.cat(labels)
             outputs = model_for_eval(images)
             # break

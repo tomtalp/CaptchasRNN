@@ -25,9 +25,9 @@ class ConvRNN(nn.Module):
         self.rnn = nn.RNN(512, 256, 1, batch_first=True) 
         
         # self.small_fc = nn.Linear(256, target_size)
-        self.fc1 = nn.Linear(256, 100)
-        self.fc2 = nn.Linear(100, target_size)
-        # self.fc3 = nn.Linear(64, target_size)
+        self.fc1 = nn.Linear(256, 128)
+        self.fc2 = nn.Linear(128, 64)
+        self.fc3 = nn.Linear(64, target_size)
         # self.fc4 = nn.Linear(64, target_size)
 
         # self.small_fc.bias.data.fill_(0)
@@ -37,8 +37,8 @@ class ConvRNN(nn.Module):
         self.fc1.weight.data.uniform_(-0.1, 0.1)
         self.fc2.bias.data.fill_(0)
         self.fc2.weight.data.uniform_(-0.1, 0.1)
-        # self.fc3.bias.data.fill_(0)
-        # self.fc3.weight.data.uniform_(-0.1, 0.1)
+        self.fc3.bias.data.fill_(0)
+        self.fc3.weight.data.uniform_(-0.1, 0.1)
         # self.fc4.bias.data.fill_(0)
         # self.fc4.weight.data.uniform_(-0.1, 0.1)
 
@@ -65,9 +65,9 @@ class ConvRNN(nn.Module):
             output = F.relu(output)
 
             output = self.fc2(output)
-            # output = F.relu(output)
+            output = F.relu(output)
 
-            # output = self.fc3(output)
+            output = self.fc3(output)
             # output = F.relu(output)
 
             # output = self.fc4(output)

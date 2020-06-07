@@ -19,15 +19,15 @@ class ImageGenerator():
         os.mkdir(self._base_dir_name)
         
         self.font = "/Users/tomtalpir/dev/tom/captcha_project/CaptchaImgGeneration/fonts/Seravek.ttc"
-        self.img_w = 160
-        self.img_h = 160
+        self.img_w = 200
+        self.img_h = 200
 
         self.captcha_generator = ImageCaptcha(width=self.img_w, height=self.img_h, fonts=[self.font])
         self.vocab = string.ascii_lowercase + string.digits
         # self.vocab = string.ascii_lowercase
 
-        self.n_min_chars = 4
-        self.n_max_chars = 8
+        self.n_min_chars = 5
+        self.n_max_chars = 10
         
     def generate_captcha_sequence(self):
         """
@@ -43,12 +43,11 @@ class ImageGenerator():
     def select_captcha_generator(self):
         """
         Select the type of Captcha generator we'll use
-        1 = PyCaptcha, Pr(x) = 0.65
-        2 = Claptcha, Pr(x) = 0.35
+        1 = PyCaptcha, Pr(x) = 0.6
+        2 = Claptcha, Pr(x) = 0.4
         """
         population = [1, 2]
-        # weights = [0.65, 0.35]
-        weights = [0, 0.1]
+        weights = [0.6, 0.4]
 
         return choices(population, weights)[0]
     
@@ -71,8 +70,7 @@ class ImageGenerator():
         filename = "./{dirname}/{sequence}_{random_id}.png".format(dirname=self._base_dir_name, sequence=sequence, random_id=random_id)
         
         noise_level = round(random.uniform(0.0, 0.1), ndigits=3) # Randomly select a noise level for our generation, from a uniform distribution
-        # c = Claptcha(sequence, self.font, (self.img_w / 1.5, self.img_h / 1.5), noise=noise_level, resample=Image.BICUBIC)
-        c = Claptcha(sequence, self.font, (self.img_w / 1.5, self.img_h / 1.5), noise=noise_level, resample=Image.NEAREST)
+        c = Claptcha(sequence, self.font, (self.img_w / 1.5, self.img_h / 1.5), noise=noise_level, resample=Image.BICUBIC)
         c.write(filename)
         return filename
     
@@ -92,9 +90,9 @@ class ImageGenerator():
                 self.generate_claptcha_image(sequence)
 
 ig = ImageGenerator()
-ig.execute_img_generation(num_of_images=20)
+ig.execute_img_generation(num_of_images=5000)
 
-# import tarfile
-# tar = tarfile.open("local_test_lowercase_ascii.tar.gz", "w:gz")
-# tar.add("local_test_lowercase_ascii/", arcname="local_test_lowercase_ascii")
-# tar.close()
+import tarfile
+tar = tarfile.open("combined_captcha_ascii_digits_5k_10_chars_test.tar.gz", "w:gz")
+tar.add("combined_captcha_ascii_digits_5k_10_chars_test/", arcname="combined_captcha_ascii_digits_5k_10_chars_test")
+tar.close()
